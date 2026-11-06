@@ -29,19 +29,35 @@ V2 Mesh independence (N_z = 30 / 60 / 120)	< 2 %	0.000 % change in T_max
 V3 Transient energy balance (heat in vs. coolant enthalpy rise)	< 2 %	−0.16 %
 Variable vs. constant wall conductivity	—	0.02 K difference (k_w almost constant over the 293–303 K range)
 Physical model
-          q'' = 1.3 MW/m²  (hot gas, Mach 7)
-   ───────────────────────────────────────────  x = 0      hot face  (Neumann BC)
-     outer layer  t₁ = 0.5 mm   CuCr1Zr
-   ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
-     inner layer  t₂ = 0.5 mm   CuCr1Zr
-   ───────────────────────────────────────────  x = 1 mm   coolant face (Robin BC)
-     coolant channel 2 × 1 mm   ──► ṁ, T_in = 280 K           z: 0 → 0.4 m
-Wall: a two-layer CuCr1Zr composite, 1 mm thick in total. Conduction through the thickness is modelled with 1-D Fourier conduction.
-Coolant: a 1-D axial energy balance, with heat transfer from the Dittus–Boelter correlation, $Nu = 0.023\,Re^{0.8}Pr^{0.4}$.
+Geometry and boundary conditions
+Layer / boundary	Position	Details
+Hot face	x = 0	Prescribed heat flux q″ = 1.3 MW/m² (Mach 7), Neumann BC
+Outer wall layer	0 – 0.5 mm	CuCr1Zr
+Inner wall layer	0.5 – 1.0 mm	CuCr1Zr
+Coolant face	x = 1 mm	Convection to coolant, Robin BC
+Coolant channel	—	2 mm × 1 mm, ṁ = 0.0093 kg/s, T_in = 280 K
+Duct length	z = 0 – 0.4 m	Uniform cross-section
+Governing relations
+
+Heat transfer to the coolant (Dittus–Boelter):
+
+$$Nu = 0.023 \, Re^{0.8} \, Pr^{0.4}$$
+
+Thermal stress (1-D proxy):
+
+$$\sigma_{th} = \frac{E \, \alpha \, \Delta T_{wall}}{1 - \nu}$$
+
+Creep (Norton–Bailey power law):
+
+$$\dot{\varepsilon} = A \, \sigma^{n} \exp\left(-\frac{Q}{R T}\right)$$
+
+Creep life is the number of 300 s flight cycles it takes to reach 1 % accumulated strain.
+
+Modelling choices
+Wall conduction: 1-D Fourier conduction through the thickness.
+Coolant: 1-D axial energy balance along the duct.
 Pressure drop: Blasius friction factor for turbulent flow, Hagen–Poiseuille for laminar.
-Properties: temperature-dependent $k_w(T)$, $\rho_w(T)$ and $c_{p,w}(T)$ for the wall, plus $c_p$, $\mu$, $k$ and $Pr$ for supercritical H₂ (10 MPa) and RP-1 (5 MPa). All are evaluated node by node.
-Thermal stress (proxy): $\sigma_{th} = \dfrac{E\,\alpha\,\Delta T_{wall}}{1-\nu}$
-Creep: Norton–Bailey power law, $\dot{\varepsilon} = A\,\sigma^{n}\exp\!\left(-\dfrac{Q}{RT}\right)$. Life is the number of cycles to 1 % accumulated strain, with each cycle a 300 s flight.
+Properties: temperature-dependent conductivity, density and specific heat for the wall, and temperature-dependent c_p, μ, k and Pr for supercritical H₂ (10 MPa) and RP-1 (5 MPa). All are evaluated at each node.
 Numerical methods
 Solver	Method	Notes
 Steady state	Node-by-node iterative two-resistance model	Up to 10 fixed-point iterations per station, tolerance 0.05 K
